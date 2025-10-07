@@ -89,6 +89,5 @@ if __name__ == "__main__":
     plt.grid()
     plt.show()
 
-    # 做线性拟合获取位移速度，乘上pixel大小之后除以位移距离就能知道角度
-
-    # 知道角度之后就可以对pixel做一个系数修正，获取正确的光斑大小和分布
+    # Total shift is 15*17 pixels over 4 mm, so the angle between k and the optical axis of CCD is about (16 * 3.69 um) / 4 mm = 0.015, negligible
+    
