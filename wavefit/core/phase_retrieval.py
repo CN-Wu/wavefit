@@ -51,7 +51,7 @@ def multi_plane_gs(
     if init_field is None:
         # use mean amplitude and random phase
         init_amp = cp.mean(cp.stack(amp_meas_list, axis=0), axis=0)
-        rs = cp.random.RandomState(5)
+        rs = cp.random.RandomState(2)
         init_phase = rs.uniform(-cp.pi, cp.pi, size=(Ny, Nx))
         E = init_amp * cp.exp(1j * init_phase)
     else:
@@ -87,7 +87,10 @@ def multi_plane_gs(
 
         # forward pass: compute Ez for each plane and replace amplitude
         Ez_cache = []
+        # i=0
         for amp_meas, z in zip(amp_meas_list, z_list):
+            # print(i)
+            # i += 1
             Ez, _ = angular_spectrum_propagation(E, dx, wavelength, z, pad_factor=1)
             Ez_cache.append(Ez)
             # replace amplitude, keep measured amplitude and phase of Ez

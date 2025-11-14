@@ -34,6 +34,32 @@ def test_multiplane_gs():
         Ez, _ = angular_spectrum_propagation(E0, dx, lam, z, pad_factor=2)
         I_meas_list.append(cp.abs(Ez)**2)
 
+    # ---------------- 添加噪声/遮挡 mask ----------------
+    Ny, Nx = I_meas_list[0].shape
+    Y, X = cp.meshgrid(cp.arange(Ny), cp.arange(Nx))
+    
+    # 定义遮挡区域（圆形污点）
+    cx, cy = Nx // 2 + 20, Ny // 2 - 10  # 污点中心位置
+    r_mask = 3                          # 半径（像素）
+    mask_spot = ((X - cx)**2 + (Y - cy)**2) < r_mask**2
+
+    # 定义一个遮挡比例，例如让强度降低 80%
+    attenuation = 0.2
+
+    I_meas_noisy = []
+    for I in I_meas_list:
+        I_corrupt = I.copy()
+        # 模拟污点：该区域信号衰减（或为0）
+        I_corrupt[mask_spot] *= attenuation
+        
+        # （可选）叠加随机噪声
+        noise_level = 0.01  # 1% 噪声
+        I_corrupt *= (1 + noise_level * cp.random.randn(*I.shape))
+        I_corrupt = cp.maximum(I_corrupt, 0)  # 防止负值
+        
+        I_meas_noisy.append(I_corrupt)
+    I_meas_list = I_meas_noisy
+
     # ---------------- multi-plane GS 恢复 ----------------
     E_rec, residuals = multi_plane_gs(
         I_meas_list,
@@ -41,6 +67,8 @@ def test_multiplane_gs():
         dx,
         lam,
         n_iter=5000,
+        relax=0.3,
+        smooth_phase_sigma=2,
         verbose=True
     )
 
